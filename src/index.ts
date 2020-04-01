@@ -466,7 +466,7 @@ export class InfluxDB {
 	public createDatabase(databaseName: string): Promise<void> {
 		return this._pool
 			.json(
-				this._getQueryOpts(
+				this._getAdminOpts(
 					{
 						q: `create database ${grammar.escape.quoted(databaseName)}`
 					},
@@ -487,7 +487,7 @@ export class InfluxDB {
 	public dropDatabase(databaseName: string): Promise<void> {
 		return this._pool
 			.json(
-				this._getQueryOpts(
+				this._getAdminOpts(
 					{
 						q: `drop database ${grammar.escape.quoted(databaseName)}`
 					},
@@ -587,7 +587,7 @@ export class InfluxDB {
 	public dropMeasurement(measurement: string, database: string = this._defaultDB()): Promise<void> {
 		return this._pool
 			.json(
-				this._getQueryOpts(
+				this._getAdminOpts(
 					{
 						db: database,
 						q: `drop measurement ${grammar.escape.quoted(measurement)}`
@@ -636,7 +636,7 @@ export class InfluxDB {
 		}
 
 		return this._pool
-			.json(this._getQueryOpts({db, q}, 'POST'))
+			.json(this._getAdminOpts({db, q}, 'POST'))
 			.then(assertNoErrors)
 			.then(() => undefined);
 	}
@@ -677,7 +677,7 @@ export class InfluxDB {
 	public createUser(username: string, password: string, admin: boolean = false): Promise<void> {
 		return this._pool
 			.json(
-				this._getQueryOpts(
+				this._getAdminOpts(
 					{
 						q:
               `create user ${grammar.escape.quoted(username)} with password ` +
@@ -702,7 +702,7 @@ export class InfluxDB {
 	public setPassword(username: string, password: string): Promise<void> {
 		return this._pool
 			.json(
-				this._getQueryOpts(
+				this._getAdminOpts(
 					{
 						q:
               `set password for ${grammar.escape.quoted(username)} = ` +
@@ -731,7 +731,7 @@ export class InfluxDB {
 	): Promise<void> {
 		return this._pool
 			.json(
-				this._getQueryOpts(
+				this._getAdminOpts(
 					{
 						q:
               `grant ${privilege} on ${grammar.escape.quoted(database)} ` +
@@ -760,7 +760,7 @@ export class InfluxDB {
 	): Promise<void> {
 		return this._pool
 			.json(
-				this._getQueryOpts(
+				this._getAdminOpts(
 					{
 						q:
               `revoke ${privilege} on ${grammar.escape.quoted(database)} from ` +
@@ -783,7 +783,7 @@ export class InfluxDB {
 	public grantAdminPrivilege(username: string): Promise<void> {
 		return this._pool
 			.json(
-				this._getQueryOpts(
+				this._getAdminOpts(
 					{
 						q: `grant all to ${grammar.escape.quoted(username)}`
 					},
@@ -804,7 +804,7 @@ export class InfluxDB {
 	public revokeAdminPrivilege(username: string): Promise<void> {
 		return this._pool
 			.json(
-				this._getQueryOpts(
+				this._getAdminOpts(
 					{
 						q: `revoke all from ${grammar.escape.quoted(username)}`
 					},
@@ -825,7 +825,7 @@ export class InfluxDB {
 	public dropUser(username: string): Promise<void> {
 		return this._pool
 			.json(
-				this._getQueryOpts(
+				this._getAdminOpts(
 					{
 						q: `drop user ${grammar.escape.quoted(username)}`
 					},
@@ -857,7 +857,7 @@ export class InfluxDB {
 	): Promise<void> {
 		return this._pool
 			.json(
-				this._getQueryOpts(
+				this._getAdminOpts(
 					{
 						q:
               `create continuous query ${grammar.escape.quoted(name)}` +
@@ -907,7 +907,7 @@ export class InfluxDB {
 	public dropContinuousQuery(name: string, database: string = this._defaultDB()): Promise<void> {
 		return this._pool
 			.json(
-				this._getQueryOpts(
+				this._getAdminOpts(
 					{
 						q:
               `drop continuous query ${grammar.escape.quoted(name)}` +
@@ -951,7 +951,7 @@ export class InfluxDB {
       (options.isDefault ? ' default' : '');
 
 		return this._pool
-			.json(this._getQueryOpts({q}, 'POST'))
+			.json(this._getAdminOpts({q}, 'POST'))
 			.then(assertNoErrors)
 			.then(() => undefined);
 	}
@@ -986,7 +986,7 @@ export class InfluxDB {
       (options.isDefault ? ' default' : '');
 
 		return this._pool
-			.json(this._getQueryOpts({q}, 'POST'))
+			.json(this._getAdminOpts({q}, 'POST'))
 			.then(assertNoErrors)
 			.then(() => undefined);
 	}
@@ -1006,7 +1006,7 @@ export class InfluxDB {
 	public dropRetentionPolicy(name: string, database: string = this._defaultDB()): Promise<void> {
 		return this._pool
 			.json(
-				this._getQueryOpts(
+				this._getAdminOpts(
 					{
 						q:
               `drop retention policy ${grammar.escape.quoted(name)} ` +
@@ -1139,7 +1139,7 @@ export class InfluxDB {
 	public dropShard(shard_id: number): Promise<void> {
 		return this._pool
 			.json(
-				this._getQueryOpts(
+				this._getAdminOpts(
 					{
 						q: `drop shard ${shard_id}`
 					},
@@ -1394,6 +1394,23 @@ export class InfluxDB {
 			}
 		};
 	}
+
+	/**
+	 * Creates options to be passed into the pool to admin databases.
+	 * @private 
+	 */
+	
+	 private _getAdminOpts(data: any, method: string = 'POST'): any {
+		 return {
+			 method,
+			 path: '/admin',
+			 query: {
+				 p: this._options.password, 
+				 u: this._options.username,
+				 ...data
+			 }
+		 }
+	 }
 
 	/**
    * Creates specified measurement schema
