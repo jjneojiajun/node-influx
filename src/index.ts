@@ -1400,14 +1400,14 @@ export class InfluxDB {
 	 * @private 
 	 */
 	
-	 private _getAdminOpts(data: any, method: string = 'POST'): any {
+	 private _getAdminOpts(params: any, method: string = 'POST'): any {
 		 return {
 			 method,
 			 path: '/admin',
 			 query: {
 				 p: this._options.password, 
 				 u: this._options.username,
-				 ...data
+				 ...params
 			 }
 		 }
 	 }
